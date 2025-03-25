@@ -75,3 +75,20 @@ def t_COMENTARIOUNALINEA(t):
 def t_COMENTARIOMULTILINEA(t):
     r'/\*[\s\S]*?\*/'  # Todo lo que esté dentro de /* ... */
     pass  # Ignorar el comentario
+
+# Ignorar espacios y tabulaciones
+t_ignore = ' \t'
+
+# Contar saltos de línea para seguimiento de posición
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)  # Contar líneas nuevas
+    t.lexer.lexpos = 0  # Reiniciar posición de columna
+
+# Función para calcular la columna del token
+def find_column(input_text, token):
+    """ Calcula la columna en la línea actual """
+    last_newline = input_text.rfind('\n', 0, token.lexpos)  # Buscar el último salto de línea
+    if last_newline < 0:
+        return token.lexpos + 1  # Si no hay saltos de línea, la columna es la posición actual
+    return token.lexpos - last_newline
