@@ -40,3 +40,38 @@ t_LLAVECIERRE = r'\}'
 t_CORCHETEAPERTURA = r'\['
 t_CORCHETECERRADURA = r'\]'
 
+# Expresiones Regulares de tokens complejos
+
+# Identificadores (variables y funciones)
+def t_IDENTIFICADOR(t):
+    r'[a-zA-Z_][a-zA-Z0-9_]*'  # Inician con letra o _, pueden contener números
+    t.type = reserved.get(t.value, 'IDENTIFICADOR')  # Si es palabra clave, se cambia el tipo
+    return t
+
+# Números enteros
+def t_ENTERO(t):
+    r'\d+'  # Secuencia de dígitos
+    t.value = int(t.value)  # Convertir a entero
+    return t
+
+# Números decimales
+def t_DECIMAL(t):
+    r'\d+\.\d+'  # Números con punto decimal
+    t.value = float(t.value)  # Convertir a flotante
+    return t
+
+# Cadenas de texto
+def t_CADENA(t):
+    r'"([^"\\]*(\\.[^"\\]*)*)"'  # Expresión regular para cadenas entre comillas dobles
+    t.value = t.value[1:-1]  # Eliminar comillas externas
+    return t
+
+# Comentarios de una línea
+def t_COMENTARIOUNALINEA(t):
+    r'//.*'  # Cualquier cosa después de //
+    pass  # Ignorar el comentario
+
+# Comentarios multilínea
+def t_COMENTARIOMULTILINEA(t):
+    r'/\*[\s\S]*?\*/'  # Todo lo que esté dentro de /* ... */
+    pass  # Ignorar el comentario
