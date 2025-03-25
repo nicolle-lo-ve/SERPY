@@ -1,1 +1,11 @@
 imprimir("Hola Mundo")
+
+i = 0
+mientras i < 3 {
+    j = 0
+    mientras j < 3 {
+        imprimir("Posición: (" + i + ", " + j + ")")
+        j = j + 1
+    }
+    i = i + 1
+}
