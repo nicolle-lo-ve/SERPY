@@ -1,2 +1,17 @@
 import ply.lex as lex
+
 tokens = ('IDENTIFICADOR', 'ENTERO', 'DECIMAL', 'CADENA', 'ASIGNACION', 'SUMA', 'RESTA', 'MULTIPLICACION', 'DIVISION', 'IGUALDAD', 'DESIGUALDAD', 'MAYORQUE', 'MENORQUE', 'YLOGICO', 'OLOGICO', 'NEGACION', 'COMA', 'PARENTESISAPERTURA', 'PARENTESISCIERRE', 'LLAVEAPERTURA', 'LLAVECIERRE', 'CORCHETEAPERTURA', 'CORCHETECERRADURA', 'COMENTARIOUNALINEA', 'COMENTARIOMULTILINEA')
+
+# Palabras clave
+
+reserved = {
+  'si' : 'SI',
+  'sino' : 'SINO',
+  'mientras' : 'MIENTRAS',
+  'para' : 'PARA',
+  'funcion' : 'DEFINIR',
+  'retornar' : 'RETORNAR',
+  'verdadero' : 'VERDADERO',
+  'falso' : 'FALSO',
+  'imprimir' : 'IMPRIMIR'
+}
