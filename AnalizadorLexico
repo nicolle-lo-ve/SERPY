@@ -100,3 +100,9 @@ def t_error(t):
 
 # Construcción del lexer
 lexer = lex.lex()
+
+# Leer archivo y analizarlo
+with open("codigo_fuente.txt", "r", encoding="utf-8") as f:
+    data = f.read()  # Leer el contenido del archivo
+
+lexer.input(data)  # Cargar el código en el analizador léxico
