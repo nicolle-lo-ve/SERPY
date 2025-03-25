@@ -9,3 +9,12 @@ mientras i < 3 {
     }
     i = i + 1
 }
+
+definir factorial(n) {
+    si n == 0 {
+        retornar 1
+    } sino {
+        retornar n * factorial(n - 1)
+    }
+}
+imprimir(factorial(5))
