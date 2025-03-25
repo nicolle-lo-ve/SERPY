@@ -106,3 +106,20 @@ with open("codigo_fuente.txt", "r", encoding="utf-8") as f:
     data = f.read()  # Leer el contenido del archivo
 
 lexer.input(data)  # Cargar el código en el analizador léxico
+
+# Guardar tokens en una lista de diccionarios
+tokens_list = []
+while True:
+    tok = lexer.token()
+    if not tok:
+        break  # Si no hay más tokens, salir del bucle
+    tokens_list.append({
+        "type": tok.type,  # Tipo de token
+        "lexeme": tok.value,  # Valor del token
+        "line": tok.lineno,  # Línea en la que se encuentra
+        "column": find_column(data, tok)  # Columna del token
+    })
+
+# Imprimir tokens generados
+for token in tokens_list:
+    print(token)  # Muestra cada token en formato diccionario
