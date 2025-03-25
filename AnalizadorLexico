@@ -17,3 +17,26 @@ reserved = {
 }
 
 tokens = tokens + tuple(reserved.values())
+
+# Expresiones Regulares de tokens simples
+
+t_ASIGNACION = r'='
+t_SUMA = r'\+'
+t_RESTA = r'-'
+t_MULTIPLICACION = r'\*'
+t_DIVISION = r'/'
+t_IGUALDAD = r'=='
+t_DESIGUALDAD = r'!='
+t_MAYORQUE = r'>'
+t_MENORQUE = r'<'
+t_YLOGICO = r'y'
+t_OLOGICO = r'o'
+t_NEGACION = r'no'
+t_COMA = r','
+t_PARENTESISAPERTURA = r'\('
+t_PARENTESISCIERRE = r'\)'
+t_LLAVEAPERTURA = r'\{'
+t_LLAVECIERRE = r'\}'
+t_CORCHETEAPERTURA = r'\['
+t_CORCHETECERRADURA = r'\]'
+
