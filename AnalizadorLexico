@@ -92,3 +92,11 @@ def find_column(input_text, token):
     if last_newline < 0:
         return token.lexpos + 1  # Si no hay saltos de línea, la columna es la posición actual
     return token.lexpos - last_newline
+
+# Manejo de errores en el análisis léxico
+def t_error(t):
+    print(f"Carácter ilegal '{t.value[0]}' en línea {t.lineno}, columna {find_column(t.lexer.lexdata, t)}")
+    t.lexer.skip(1)  # Saltar el carácter ilegal y continuar
+
+# Construcción del lexer
+lexer = lex.lex()
