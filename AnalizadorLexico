@@ -15,3 +15,5 @@ reserved = {
   'falso' : 'FALSO',
   'imprimir' : 'IMPRIMIR'
 }
+
+tokens = tokens + tuple(reserved.values())
