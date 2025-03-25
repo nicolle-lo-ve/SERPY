@@ -83,7 +83,6 @@ t_ignore = ' \t'
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)  # Contar líneas nuevas
-    t.lexer.lexpos = 0  # Reiniciar posición de columna
 
 # Función para calcular la columna del token
 def find_column(input_text, token):
