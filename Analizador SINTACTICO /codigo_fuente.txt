@@ -1,0 +1,16 @@
+VAR x = 10;
+x = x + 5;
+IMPRIMIR (x);
+
+PARA (VAR i = 0; i < 5; i = i + 1) {
+    IMPRIMIR (i);
+}
+
+VAR a = 0;
+var b = 3;
+MIENTRAS (a < b) {
+    SI (a % 2 == 0) {
+        IMPRIMIR("par");
+    }
+    a = a + 1;
+}
