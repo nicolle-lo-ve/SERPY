@@ -1,0 +1,5 @@
+;int;mult;mas;par_izq;par_der;$
+E;T X;;;T X;;
+X;;; mas E;;ε;ε
+T;int Y;; ;par_izq E par_der;; 
+Y;;mult T;ε;;ε;ε
