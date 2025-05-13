@@ -36,7 +36,7 @@ class AnalizadorLL1:
             with open(ruta, 'r', encoding='utf-8') as f:
                 lineas = f.readlines()
             
-            # Procesar cada línea de la gramática
+            # Primero, identificar todos los no terminales (lado izquierdo de cada producción)
             for linea in lineas:
                 linea = linea.strip()
                 if not linea:
@@ -49,7 +49,6 @@ class AnalizadorLL1:
                     continue
                 
                 no_terminal = partes[0].strip()
-                producciones_nt = partes[1].strip().split('|')
                 
                 # Guardar el primer símbolo no terminal como símbolo inicial
                 if self.simbolo_inicial is None:
@@ -58,9 +57,22 @@ class AnalizadorLL1:
                 # Añadir no terminal a la lista
                 self.no_terminales.add(no_terminal)
                 
-                # Procesar producciones para este no terminal
+                # Inicializar producciones para este no terminal
                 if no_terminal not in self.producciones:
                     self.producciones[no_terminal] = []
+            
+            # Luego, procesar todas las producciones
+            for linea in lineas:
+                linea = linea.strip()
+                if not linea:
+                    continue
+                
+                partes = re.split(r'\s*->\s*', linea)
+                if len(partes) != 2:
+                    continue
+                
+                no_terminal = partes[0].strip()
+                producciones_nt = partes[1].strip().split('|')
                 
                 for prod in producciones_nt:
                     prod = prod.strip()
@@ -74,6 +86,7 @@ class AnalizadorLL1:
                     if prod != self.EPSILON:
                         simbolos = prod.split()
                         for simbolo in simbolos:
+                            # Un símbolo es terminal si NO es no terminal y no es épsilon
                             if simbolo not in self.no_terminales and simbolo != self.EPSILON:
                                 self.terminales.add(simbolo)
             
@@ -81,8 +94,8 @@ class AnalizadorLL1:
             self.terminales.add(self.EOF)
             
             print(f"Gramática cargada con éxito. Símbolo inicial: {self.simbolo_inicial}")
-            print(f"No terminales: {self.no_terminales}")
-            print(f"Terminales: {self.terminales}")
+            print(f"No terminales ({len(self.no_terminales)}): {self.no_terminales}")
+            print(f"Terminales ({len(self.terminales)}): {self.terminales}")
             print("Producciones:")
             for nt, prods in self.producciones.items():
                 print(f"  {nt} -> {' | '.join(prods)}")
@@ -121,23 +134,26 @@ class AnalizadorLL1:
                         # Para cada símbolo en la producción
                         all_can_be_epsilon = True
                         for i, simbolo in enumerate(simbolos):
-                            if simbolo not in self.first:
-                                self.first[simbolo] = {simbolo}  # Terminal
-                            
-                            # Añadir FIRST del símbolo (sin épsilon) al FIRST del no terminal
-                            simbolo_first = self.first[simbolo].copy()
-                            if self.EPSILON in simbolo_first:
-                                simbolo_first.remove(self.EPSILON)
-                            
-                            first_size_antes = len(self.first[no_terminal])
-                            self.first[no_terminal].update(simbolo_first)
-                            if len(self.first[no_terminal]) > first_size_antes:
-                                cambio = True
-                            
-                            # Si este símbolo no puede derivar épsilon, no seguimos
-                            if self.EPSILON not in self.first[simbolo]:
+                            # Si es el primer símbolo que no puede derivar épsilon, nos detenemos
+                            if self.EPSILON not in self.first.get(simbolo, set()):
+                                # Si es un terminal o un no terminal sin épsilon
+                                simbolo_first = self.first.get(simbolo, {simbolo}).copy()
+                                first_size_antes = len(self.first[no_terminal])
+                                self.first[no_terminal].update(simbolo_first)
+                                if len(self.first[no_terminal]) > first_size_antes:
+                                    cambio = True
                                 all_can_be_epsilon = False
                                 break
+                            else:
+                                # Es un símbolo que puede derivar épsilon
+                                simbolo_first = self.first.get(simbolo, {simbolo}).copy()
+                                if self.EPSILON in simbolo_first:
+                                    simbolo_first.remove(self.EPSILON)
+                                
+                                first_size_antes = len(self.first[no_terminal])
+                                self.first[no_terminal].update(simbolo_first)
+                                if len(self.first[no_terminal]) > first_size_antes:
+                                    cambio = True
                         
                         # Si todos los símbolos pueden derivar épsilon, añadir épsilon al FIRST
                         if all_can_be_epsilon and self.EPSILON not in self.first[no_terminal]:
@@ -146,8 +162,11 @@ class AnalizadorLL1:
         
         # Mostrar conjuntos FIRST
         print("Conjuntos FIRST calculados:")
-        for simbolo, conjunto in self.first.items():
-            print(f"  FIRST({simbolo}) = {conjunto}")
+        for nt in sorted(self.no_terminales):
+            print(f"  FIRST({nt}) = {self.first[nt]}")
+        # Solo mostrar FIRST de terminales si es necesario para depuración
+        # for t in sorted(self.terminales):
+        #     print(f"  FIRST({t}) = {self.first[t]}")
     
     def calcular_first_de_cadena(self, cadena):
         """Calcula el conjunto FIRST para una cadena de símbolos"""
@@ -196,8 +215,12 @@ class AnalizadorLL1:
         
         # Calcular FOLLOW
         cambio = True
-        while cambio:
+        iteraciones = 0
+        max_iteraciones = 100  # Límite para evitar bucles infinitos
+        
+        while cambio and iteraciones < max_iteraciones:
             cambio = False
+            iteraciones += 1
             
             for no_terminal in self.no_terminales:
                 for produccion_izq in self.no_terminales:
@@ -239,10 +262,13 @@ class AnalizadorLL1:
                                 if len(self.follow[no_terminal]) > follow_size_antes:
                                     cambio = True
         
+        if iteraciones >= max_iteraciones:
+            print("Advertencia: Se alcanzó el límite máximo de iteraciones al calcular FOLLOW.")
+            
         # Mostrar conjuntos FOLLOW
         print("Conjuntos FOLLOW calculados:")
-        for nt, conjunto in self.follow.items():
-            print(f"  FOLLOW({nt}) = {conjunto}")
+        for nt in sorted(self.no_terminales):
+            print(f"  FOLLOW({nt}) = {self.follow[nt]}")
     
     def construir_tabla_ll1(self):
         """Construye la tabla de análisis sintáctico LL(1)"""
@@ -295,16 +321,23 @@ class AnalizadorLL1:
             with open(ruta_salida, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 
-                # Encabezados: una celda vacía seguida de los terminales
-                encabezados = [''] + sorted(list(self.terminales))
+                # Encabezados: una celda vacía seguida de los terminales ordenados
+                terminales_ordenados = sorted(list(self.terminales))
+                encabezados = [''] + terminales_ordenados
                 writer.writerow(encabezados)
                 
                 # Filas: no terminales y sus producciones para cada terminal
                 for nt in sorted(list(self.no_terminales)):
                     fila = [nt]
-                    for t in sorted(list(self.terminales)):
+                    for t in terminales_ordenados:
                         produccion = self.tabla_ll1[nt][t]
-                        fila.append(produccion if produccion is not None else '')
+                        # Formateamos la producción para mayor claridad en el CSV
+                        if produccion == self.EPSILON:
+                            fila.append(self.EPSILON)
+                        elif produccion is not None:
+                            fila.append(produccion)
+                        else:
+                            fila.append('')
                     writer.writerow(fila)
             
             print(f"Tabla guardada con éxito en: {ruta_salida}")
@@ -315,18 +348,23 @@ class AnalizadorLL1:
         """Muestra la tabla de análisis sintáctico LL(1) en la consola"""
         print("\nTabla de análisis sintáctico LL(1):")
         
+        # Definir el ancho de columna para mejor presentación
+        ancho_col = 25
+        
         # Encabezados
-        print(f"{'':15}", end='')
-        for t in sorted(list(self.terminales)):
-            print(f"{t:15}", end='')
-        print()
+        print(f"{'':^{ancho_col}}", end='')
+        terminales_ordenados = sorted(list(self.terminales))
+        for t in terminales_ordenados:
+            print(f"{t:^{ancho_col}}", end='')
+        print("\n" + "-" * (ancho_col * (len(terminales_ordenados) + 1)))
         
         # Filas
         for nt in sorted(list(self.no_terminales)):
-            print(f"{nt:15}", end='')
-            for t in sorted(list(self.terminales)):
+            print(f"{nt:^{ancho_col}}", end='')
+            for t in terminales_ordenados:
                 produccion = self.tabla_ll1[nt][t]
-                print(f"{produccion if produccion is not None else '':15}", end='')
+                celda = produccion if produccion is not None else ''
+                print(f"{celda:^{ancho_col}}", end='')
             print()
     
     def analizar(self):
@@ -348,15 +386,24 @@ def main():
         if not ruta_salida:
             ruta_salida = "tabla_ll1.csv"
         
+        print("\n" + "="*80)
+        print("ANALIZADOR LL(1) - GENERADOR DE TABLA SINTÁCTICA".center(80))
+        print("="*80 + "\n")
+        
         # Crear analizador y procesar gramática
         analizador = AnalizadorLL1(ruta_gramatica)
         analizador.analizar()
         analizador.guardar_tabla_csv(ruta_salida)
         
-        print("\n¡Proceso completado con éxito!")
+        print("\n" + "="*80)
+        print("¡PROCESO COMPLETADO CON ÉXITO!".center(80))
+        print(f"La tabla se guardó en: {ruta_salida}".center(80))
+        print("="*80 + "\n")
         
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"\nError: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
