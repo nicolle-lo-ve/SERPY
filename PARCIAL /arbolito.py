@@ -286,6 +286,42 @@ def analizar_cadena(cadena):
     
     return resultado
 
+def leer_cadena_desde_archivo(nombre_archivo):
+    """
+    Lee una cadena de tokens desde un archivo de texto.
+    
+    Args:
+        nombre_archivo (str): Ruta del archivo a leer
+        
+    Returns:
+        str: Cadena de tokens leída del archivo
+    """
+    try:
+        with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
+            return archivo.read().strip()
+    except FileNotFoundError:
+        print(f"\nERROR: No se encontró el archivo '{nombre_archivo}'")
+        return None
+    except Exception as e:
+        print(f"\nERROR al leer el archivo: {str(e)}")
+        return None
+
 if __name__ == "__main__":
-    print("\n EJEMPLO N° 1 ")
-    analizar_cadena("IMPRIMIR PAR_IZQ CADENA PAR_DER PUNTOYCOMA")
+    # Nombre del archivo que contiene los tokens
+    archivo_entrada = "entrada.txt"
+    
+    # Leer la cadena desde el archivo
+    cadena = leer_cadena_desde_archivo(archivo_entrada)
+    
+    if cadena is not None:
+        print(f"\nAnalizando cadena desde el archivo '{archivo_entrada}':")
+        print(f"Contenido: {cadena}\n")
+        
+        # Realizar el análisis
+        resultado = analizar_cadena(cadena)
+        
+        # Mostrar resultados adicionales si es necesario
+        if resultado['CONCLUSION'] == "ACEPTADO :)":
+            print("\nAnálisis completado con éxito!")
+        else:
+            print("\nSe encontraron errores durante el análisis.")
