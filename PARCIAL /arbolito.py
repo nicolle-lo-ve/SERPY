@@ -267,7 +267,7 @@ def analizar_cadena(cadena):
     Analiza una cadena de tokens separados por espacios.
     """
     tokens = cadena.strip().split()
-    analizador = AnalizadorSintacticoLL("tabla_sintactica1.csv")
+    analizador = AnalizadorSintacticoLL("tabla_ll1.csv")
     resultado = analizador.analizar(tokens)
     
     print("\n <<< RESUMEN DEL ANÁLISIS >>>")
