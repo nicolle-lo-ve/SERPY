@@ -1,0 +1,55 @@
+VAR numero1 = 5;
+VAR numero2 = 10;
+VAR resultado = 0;
+VAR mensaje = "Calculadora basica";
+DEFINIR sumar(a, b) {
+    RETORNAR a + b;
+}
+DEFINIR restar(a, b) {
+    RETORNAR a - b;
+}
+DEFINIR multiplicar(a, b) {
+    RETORNAR a * b;
+}
+DEFINIR esMayor(a, b) {
+    SI (a > b) {
+        RETORNAR 1;
+    }
+    RETORNAR 0;
+}
+DEFINIR factorial(n) {
+    SI (n <= 1) {
+        RETORNAR 1;
+    }
+    
+    VAR resultado = n;
+    VAR contador = n - 1;
+    
+    MIENTRAS (contador > 0) {
+        resultado = resultado * contador;
+        contador = contador - 1;
+    }
+    
+    RETORNAR resultado;
+}
+imprimir(mensaje);
+imprimir(numero1);
+imprimir(numero2);
+VAR suma = sumar(numero1, numero2);
+imprimir(suma);
+VAR resta = restar(numero1, numero2);
+imprimir(resta);
+VAR producto = multiplicar(numero1, numero2);
+imprimir(producto);
+VAR comparacion = esMayor(numero1, numero2);
+SI (comparacion == 1) {
+    imprimir(numero1);
+} SINO {
+    imprimir(numero2);
+}
+VAR fact5 = factorial(5);
+imprimir(fact5);
+PARA (VAR i = 1; i <= 5; i = i + 1) {
+    VAR factI = factorial(i);
+    imprimir(factI);
+}

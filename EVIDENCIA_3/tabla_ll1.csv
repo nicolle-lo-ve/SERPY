@@ -1,0 +1,37 @@
+,$,CADENA,COMA,DEFINIR,DIFERENTE,DIV,FALSO,IDENTIFICADOR,IGUAL,IGUAL_IGUAL,IMPRIMIR,LLAVE_DER,LLAVE_IZQ,MAS,MAYOR,MAYOR_IGUAL,MENOR,MENOR_IGUAL,MENOS,MIENTRAS,MULT,NEGACION,NUMERO,O_LOGICO,PARA,PAR_DER,PAR_IZQ,POTENCIA,PUNTOYCOMA,RETORNAR,SI,SINO,VAR,VERDADERO,Y_LOGICO
+PROGRAMA,lista_sentencias,,,lista_sentencias,,,,lista_sentencias,,,lista_sentencias,,,,,,,,,lista_sentencias,,,,,lista_sentencias,,,,,lista_sentencias,lista_sentencias,,lista_sentencias,,
+asignacion_o_llamada,,,,,,,,,IGUAL expresion,,,,,,,,,,,,,,,,,,PAR_IZQ lista_argumentos PAR_DER,,,,,,,,
+bloque,,,,,,,,,,,,,LLAVE_IZQ lista_sentencias LLAVE_DER,,,,,,,,,,,,,,,,,,,,,,
+exp_comparacion,,exp_suma exp_comparacion_resto,,,,,exp_suma exp_comparacion_resto,exp_suma exp_comparacion_resto,,,,,,,,,,,exp_suma exp_comparacion_resto,,,exp_suma exp_comparacion_resto,exp_suma exp_comparacion_resto,,,,exp_suma exp_comparacion_resto,,,,,,,exp_suma exp_comparacion_resto,
+exp_comparacion_resto,,,ε,,ε,,,,,ε,,,,,op_comp exp_suma exp_comparacion_resto,op_comp exp_suma exp_comparacion_resto,op_comp exp_suma exp_comparacion_resto,op_comp exp_suma exp_comparacion_resto,,,,,,ε,,ε,,,ε,,,,,,ε
+exp_igualdad,,exp_comparacion exp_igualdad_resto,,,,,exp_comparacion exp_igualdad_resto,exp_comparacion exp_igualdad_resto,,,,,,,,,,,exp_comparacion exp_igualdad_resto,,,exp_comparacion exp_igualdad_resto,exp_comparacion exp_igualdad_resto,,,,exp_comparacion exp_igualdad_resto,,,,,,,exp_comparacion exp_igualdad_resto,
+exp_igualdad_resto,,,ε,,op_igualdad exp_comparacion exp_igualdad_resto,,,,,op_igualdad exp_comparacion exp_igualdad_resto,,,,,,,,,,,,,,ε,,ε,,,ε,,,,,,ε
+exp_logico_and,,exp_igualdad exp_logico_and_resto,,,,,exp_igualdad exp_logico_and_resto,exp_igualdad exp_logico_and_resto,,,,,,,,,,,exp_igualdad exp_logico_and_resto,,,exp_igualdad exp_logico_and_resto,exp_igualdad exp_logico_and_resto,,,,exp_igualdad exp_logico_and_resto,,,,,,,exp_igualdad exp_logico_and_resto,
+exp_logico_and_resto,,,ε,,,,,,,,,,,,,,,,,,,,,ε,,ε,,,ε,,,,,,Y_LOGICO exp_igualdad exp_logico_and_resto
+exp_logico_or_resto,,,ε,,,,,,,,,,,,,,,,,,,,,O_LOGICO exp_logico_and exp_logico_or_resto,,ε,,,ε,,,,,,
+exp_mult,,exp_potencia exp_mult_resto,,,,,exp_potencia exp_mult_resto,exp_potencia exp_mult_resto,,,,,,,,,,,exp_potencia exp_mult_resto,,,exp_potencia exp_mult_resto,exp_potencia exp_mult_resto,,,,exp_potencia exp_mult_resto,,,,,,,exp_potencia exp_mult_resto,
+exp_mult_resto,,,ε,,ε,op_mult exp_potencia exp_mult_resto,,,,ε,,,,ε,ε,ε,ε,ε,ε,,op_mult exp_potencia exp_mult_resto,,,ε,,ε,,,ε,,,,,,ε
+exp_potencia,,exp_unario exp_potencia_resto,,,,,exp_unario exp_potencia_resto,exp_unario exp_potencia_resto,,,,,,,,,,,exp_unario exp_potencia_resto,,,exp_unario exp_potencia_resto,exp_unario exp_potencia_resto,,,,exp_unario exp_potencia_resto,,,,,,,exp_unario exp_potencia_resto,
+exp_potencia_resto,,,ε,,ε,ε,,,,ε,,,,ε,ε,ε,ε,ε,ε,,ε,,,ε,,ε,,POTENCIA exp_unario exp_potencia_resto,ε,,,,,,ε
+exp_suma,,exp_mult exp_suma_resto,,,,,exp_mult exp_suma_resto,exp_mult exp_suma_resto,,,,,,,,,,,exp_mult exp_suma_resto,,,exp_mult exp_suma_resto,exp_mult exp_suma_resto,,,,exp_mult exp_suma_resto,,,,,,,exp_mult exp_suma_resto,
+exp_suma_resto,,,ε,,ε,,,,,ε,,,,op_suma exp_mult exp_suma_resto,ε,ε,ε,ε,op_suma exp_mult exp_suma_resto,,,,,ε,,ε,,,ε,,,,,,ε
+exp_unario,,primario,,,,,primario,primario,,,,,,,,,,,MENOS exp_unario,,,NEGACION exp_unario,primario,,,,primario,,,,,,,primario,
+expresion,,exp_logico_and exp_logico_or_resto,,,,,exp_logico_and exp_logico_or_resto,exp_logico_and exp_logico_or_resto,,,,,,,,,,,exp_logico_and exp_logico_or_resto,,,exp_logico_and exp_logico_or_resto,exp_logico_and exp_logico_or_resto,,,,exp_logico_and exp_logico_or_resto,,,,,,,exp_logico_and exp_logico_or_resto,
+funcion_def,,,,DEFINIR IDENTIFICADOR PAR_IZQ parametros PAR_DER bloque,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+lista_argumentos,,expresion lista_argumentos_cont,,,,,expresion lista_argumentos_cont,expresion lista_argumentos_cont,,,,,,,,,,,expresion lista_argumentos_cont,,,expresion lista_argumentos_cont,expresion lista_argumentos_cont,,,ε,expresion lista_argumentos_cont,,,,,,,expresion lista_argumentos_cont,
+lista_argumentos_cont,,,COMA expresion lista_argumentos_cont,,,,,,,,,,,,,,,,,,,,,,,ε,,,,,,,,,
+lista_sentencias,ε,,,sentencia lista_sentencias,,,,sentencia lista_sentencias,,,sentencia lista_sentencias,ε,,,,,,,,sentencia lista_sentencias,,,,,sentencia lista_sentencias,,,,,sentencia lista_sentencias,sentencia lista_sentencias,,sentencia lista_sentencias,,
+mientras_sentencia,,,,,,,,,,,,,,,,,,,,MIENTRAS PAR_IZQ expresion PAR_DER bloque,,,,,,,,,,,,,,,
+op_comp,,,,,,,,,,,,,,,MAYOR,MAYOR_IGUAL,MENOR,MENOR_IGUAL,,,,,,,,,,,,,,,,,
+op_igualdad,,,,,DIFERENTE,,,,,IGUAL_IGUAL,,,,,,,,,,,,,,,,,,,,,,,,,
+op_mult,,,,,,DIV,,,,,,,,,,,,,,,MULT,,,,,,,,,,,,,,
+op_suma,,,,,,,,,,,,,,MAS,,,,,MENOS,,,,,,,,,,,,,,,,
+para_inicio,,,,,,,,IDENTIFICADOR IGUAL expresion,,,,,,,,,,,,,,,,,,,,,,,,,VAR IDENTIFICADOR IGUAL expresion,,
+para_sentencia,,,,,,,,,,,,,,,,,,,,,,,,,PARA PAR_IZQ para_inicio PUNTOYCOMA expresion PUNTOYCOMA IDENTIFICADOR IGUAL expresion PAR_DER bloque,,,,,,,,,,
+parametros,,,,,,,,IDENTIFICADOR parametros_cont,,,,,,,,,,,,,,,,,,ε,,,,,,,,,
+parametros_cont,,,COMA IDENTIFICADOR parametros_cont,,,,,,,,,,,,,,,,,,,,,,,ε,,,,,,,,,
+primario,,CADENA,,,,,FALSO,IDENTIFICADOR primario_llamada_opcional,,,,,,,,,,,,,,,NUMERO,,,,PAR_IZQ expresion PAR_DER,,,,,,,VERDADERO,
+primario_llamada_opcional,,,ε,,ε,ε,,,,ε,,,,ε,ε,ε,ε,ε,ε,,ε,,,ε,,ε,PAR_IZQ lista_argumentos PAR_DER,ε,ε,,,,,,ε
+sentencia,,,,funcion_def,,,,IDENTIFICADOR asignacion_o_llamada PUNTOYCOMA,,,IMPRIMIR PAR_IZQ lista_argumentos PAR_DER PUNTOYCOMA,,,,,,,,,mientras_sentencia,,,,,para_sentencia,,,,,RETORNAR expresion PUNTOYCOMA,si_sentencia,,VAR IDENTIFICADOR IGUAL expresion PUNTOYCOMA,,
+si_sentencia,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,SI PAR_IZQ expresion PAR_DER bloque sino_parte,,,,
+sino_parte,ε,,,ε,,,,ε,,,ε,ε,,,,,,,,ε,,,,,ε,,,,,ε,ε,SINO bloque,ε,,

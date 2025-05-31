@@ -1,0 +1,42 @@
+
+========================================================================================================================
+Tabla de Símbolos:
+========================================================================================================================
+Lexema          Categoría Lexica  Tipo       Dimensión    Valor           Ámbito          Declarada En  Referencias 
+------------------------------------------------------------------------------------------------------------------------
+a               parametro         unknown    -            -               esMayor         14            -           
+b               parametro         unknown    -            -               esMayor         14            -           
+n               parametro         unknown    -            -               factorial       20            -           
+comparacion     variable          unknown    -            esMayor         global          44            L:44,45     
+contador        variable          unknown    -            n               global          26            L:26,28,29+2
+esMayor         funcion           void       -            -               global          14            L:14,44     
+fact5           variable          unknown    -            factorial       global          50            L:50,51     
+factI           variable          unknown    -            factorial       global          53            L:53,54     
+factorial       funcion           void       -            -               global          20            L:20,50,53  
+i               variable          int        -            1               global          52            L:52,52,52+2
+mensaje         variable          string     -            Calculadora...  global          4             L:4,35      
+multiplicar     funcion           void       -            -               global          11            L:11,42     
+numero1         variable          int        -            5               global          1             L:1,36,38+4 
+numero2         variable          int        -            10              global          2             L:2,37,38+4 
+producto        variable          unknown    -            multiplicar     global          42            L:42,43     
+resta           variable          unknown    -            restar          global          40            L:40,41     
+restar          funcion           void       -            -               global          8             L:8,40      
+resultado       variable          int        -            0               global          3             L:3,25,29+2 
+suma            variable          unknown    -            sumar           global          38            L:38,39     
+sumar           funcion           void       -            -               global          5             L:5,38      
+a               parametro         unknown    -            -               multiplicar     11            -           
+b               parametro         unknown    -            -               multiplicar     11            -           
+a               parametro         unknown    -            -               restar          8             -           
+b               parametro         unknown    -            -               restar          8             -           
+a               parametro         unknown    -            -               sumar           5             -           
+b               parametro         unknown    -            -               sumar           5             -           
+
+============================================================
+RESUMEN POR ÁMBITOS:
+============================================================
+📍 GLOBAL: 17 símbolos (Variables: 12, Funciones: 5, Parámetros: 0)
+📍 SUMAR: 2 símbolos (Variables: 0, Funciones: 0, Parámetros: 2)
+📍 RESTAR: 2 símbolos (Variables: 0, Funciones: 0, Parámetros: 2)
+📍 MULTIPLICAR: 2 símbolos (Variables: 0, Funciones: 0, Parámetros: 2)
+📍 ESMAYOR: 2 símbolos (Variables: 0, Funciones: 0, Parámetros: 2)
+📍 FACTORIAL: 1 símbolos (Variables: 0, Funciones: 0, Parámetros: 1)
