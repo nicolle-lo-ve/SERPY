@@ -1,291 +1,352 @@
-# tabla_simbolos_adaptada.py
-# Versión adaptada y simplificada para el compilador existente
-# Compatible con la arquitectura actual sin dependencias externas
-
 class Simbolo:
     """Clase para representar un símbolo en la tabla de símbolos"""
     
-    def __init__(self, categoria_lexica, tipo, lexema, dimension=None, valor=None, 
-                 ambito="global", declarada_en=None, referencias=None):
+    def __init__(self, categoria, tipo, nombre, ambito, declarada_en=None, valor=None):
         """
         Inicializa un símbolo.
         
         Args:
-            categoria_lexica (str): Tipo de símbolo (variable, funcion, parametro)
-            tipo (str): Tipo de dato (int, float, string, boolean, void)
-            lexema (str): Nombre del símbolo
-            dimension (str, optional): Dimensión si es array
-            valor (any, optional): Valor inicial
-            ambito (str): Ámbito del símbolo
-            declarada_en (int, optional): Línea donde se declaró
-            referencias (list, optional): Lista de referencias
+            categoria (str): 'variable', 'funcion', 'parametro', 'constante'
+            tipo (str): Tipo de dato ('int', 'float', 'string', 'boolean', 'void')
+            nombre (str): Nombre del símbolo
+            ambito (str): Ámbito donde se declara
+            declarada_en (int): Línea de declaración
+            valor: Valor inicial si es una constante
         """
-        self.categoria_lexica = categoria_lexica
+        self.categoria = categoria
         self.tipo = tipo
-        self.lexema = lexema
-        self.dimension = dimension
-        self.valor = valor
+        self.nombre = nombre
         self.ambito = ambito
         self.declarada_en = declarada_en
-        self.referencias = referencias if referencias else []
-        
-        # Propiedades adicionales
-        self.inicializada = valor is not None
+        self.valor = valor
+        self.referencias = []
+        self.inicializada = False
         self.usada = False
-        self.parametros = []  # Para funciones
-    
-    def agregar_referencia(self, linea, columna=None):
-        """Agrega una referencia al símbolo"""
-        self.referencias.append({
-            'linea': linea,
-            'columna': columna,
-            'usado': True
-        })
+        self.parametros = [] if categoria == 'funcion' else None
+        self.tipo_retorno = 'void' if categoria == 'funcion' else None
+        
+    def agregar_referencia(self, linea):
+        """Registra una referencia al símbolo"""
+        if linea not in self.referencias:
+            self.referencias.append(linea)
         self.usada = True
-    
+        
+    def agregar_parametro(self, nombre_param, tipo_param):
+        """Agrega un parámetro a una función"""
+        if self.categoria == 'funcion':
+            self.parametros.append((nombre_param, tipo_param))
+            
+    def set_tipo_retorno(self, tipo):
+        """Establece el tipo de retorno de una función"""
+        if self.categoria == 'funcion':
+            self.tipo_retorno = tipo
+        
     def __str__(self):
-        return f"{self.lexema} ({self.categoria_lexica}:{self.tipo})"
-    
-    def __repr__(self):
-        return self.__str__()
-
+        if self.categoria == 'funcion':
+            params = f"({','.join([f'{p[0]}:{p[1]}' for p in self.parametros])})" if self.parametros else "()"
+            return f"{self.nombre}: {self.categoria}<{self.tipo_retorno}>{params} @{self.ambito}"
+        elif self.valor is not None:
+            return f"{self.nombre}: {self.categoria}<{self.tipo}> = {self.valor} @{self.ambito}"
+        else:
+            return f"{self.nombre}: {self.categoria}<{self.tipo}> @{self.ambito}"
 
 class TablaSimbolos:
-    """Tabla de símbolos para el compilador"""
+    """Tabla de símbolos con manejo de ámbitos anidados"""
     
     def __init__(self):
-        """Inicializa la tabla de símbolos"""
-        self.tabla = {}  # {lexema: Simbolo}
-        self.ambitos = ["global"]  # Stack de ámbitos
-        self.ambito_actual = "global"
-        self.estadisticas = {
-            'total_simbolos': 0,
-            'variables': 0,
-            'funciones': 0,
-            'parametros': 0,
-            'errores': 0,
-            'advertencias': 0
-        }
+        self.tabla = {}  # clave: "ambito::nombre" -> Simbolo
+        self.pila_ambitos = ["global"]  # Pila de ámbitos
         self.errores = []
         self.advertencias = []
-    
-    def cambiar_ambito(self, nuevo_ambito):
-        """Cambia el ámbito actual"""
-        self.ambitos.append(nuevo_ambito)
-        self.ambito_actual = nuevo_ambito
-    
+        self.contador_ambitos = 0
+        
+        # Funciones predefinidas del sistema
+        self._agregar_funciones_predefinidas()
+        
+    def _agregar_funciones_predefinidas(self):
+        """Agrega funciones predefinidas del sistema"""
+        # Función imprimir
+        imprimir = Simbolo('funcion', 'void', 'imprimir', 'global', 0)
+        imprimir.parametros = [('valor', 'any')]  # Acepta cualquier tipo
+        imprimir.tipo_retorno = 'void'
+        self.tabla['global::imprimir'] = imprimir
+        
+    def entrar_ambito(self, nombre_ambito=None):
+        """Entra a un nuevo ámbito"""
+        if nombre_ambito is None:
+            self.contador_ambitos += 1
+            nombre_ambito = f"bloque_{self.contador_ambitos}"
+        self.pila_ambitos.append(nombre_ambito)
+        
     def salir_ambito(self):
         """Sale del ámbito actual"""
-        if len(self.ambitos) > 1:
-            self.ambitos.pop()
-            self.ambito_actual = self.ambitos[-1]
-    
-    def existe_simbolo(self, lexema, ambito=None):
-        """Verifica si existe un símbolo"""
-        clave = self._generar_clave(lexema, ambito or self.ambito_actual)
-        return clave in self.tabla
-    
-    def obtener_simbolo(self, lexema, ambito=None):
-        """Obtiene un símbolo de la tabla"""
-        # Buscar en el ámbito especificado
-        if ambito:
-            clave = self._generar_clave(lexema, ambito)
-            if clave in self.tabla:
-                return self.tabla[clave]
+        if len(self.pila_ambitos) > 1:
+            self.pila_ambitos.pop()
+            
+    def ambito_actual(self):
+        """Obtiene el ámbito actual"""
+        return self.pila_ambitos[-1]
         
-        # Buscar en ámbitos desde el actual hacia global
-        for ambito_busqueda in reversed(self.ambitos):
-            clave = self._generar_clave(lexema, ambito_busqueda)
-            if clave in self.tabla:
-                return self.tabla[clave]
+    def obtener_clave_completa(self, nombre, ambito=None):
+        """Genera la clave completa para un símbolo"""
+        if ambito is None:
+            ambito = self.ambito_actual()
+        return f"{ambito}::{nombre}"
         
-        return None
-    
-    def agregar_simbolo(self, simbolo):
+    def agregar(self, simbolo):
         """Agrega un símbolo a la tabla"""
-        clave = self._generar_clave(simbolo.lexema, simbolo.ambito)
+        clave = self.obtener_clave_completa(simbolo.nombre, simbolo.ambito)
         
         # Verificar si ya existe en el mismo ámbito
         if clave in self.tabla:
-            self.errores.append(f"Error: El símbolo '{simbolo.lexema}' ya está declarado en el ámbito '{simbolo.ambito}'")
-            self.estadisticas['errores'] += 1
+            self.errores.append(
+                f"Error semantico: Variable '{simbolo.nombre}' ya declarada en el ambito '{simbolo.ambito}'"
+                + (f" (linea {simbolo.declarada_en})" if simbolo.declarada_en else "")
+            )
             return False
-        
-        # Agregar el símbolo
+            
         self.tabla[clave] = simbolo
-        self.estadisticas['total_simbolos'] += 1
-        
-        # Actualizar estadísticas
-        if simbolo.categoria_lexica == 'variable':
-            self.estadisticas['variables'] += 1
-        elif simbolo.categoria_lexica == 'funcion':
-            self.estadisticas['funciones'] += 1
-        elif simbolo.categoria_lexica == 'parametro':
-            self.estadisticas['parametros'] += 1
-        
+        simbolo.inicializada = True
         return True
-    
-    def _generar_clave(self, lexema, ambito):
-        """Genera una clave única para el símbolo"""
-        return f"{ambito}::{lexema}"
-    
-    def imprimir_tabla(self):
-        """Imprime la tabla de símbolos en el formato solicitado"""
-        print("\n" + "="*120)
-        print("Tabla de Símbolos:")
-        print("="*120)
         
-        if not self.tabla:
-            print("⚠️  La tabla de símbolos está vacía")
-            return
+    def buscar(self, nombre, linea_referencia=None):
+        """
+        Busca un símbolo por nombre, siguiendo la cadena de ámbitos.
+        Retorna el símbolo encontrado o None si no existe.
+        """
+        # Buscar en orden: ámbito actual hacia global
+        for ambito in reversed(self.pila_ambitos):
+            clave = self.obtener_clave_completa(nombre, ambito)
+            if clave in self.tabla:
+                simbolo = self.tabla[clave]
+                if linea_referencia:
+                    simbolo.agregar_referencia(linea_referencia)
+                return simbolo
         
-        # Encabezados con el formato exacto solicitado
-        print(f"{'Lexema':<15} {'Categoría Lexica':<17} {'Tipo':<10} {'Dimensión':<12} {'Valor':<15} {'Ámbito':<15} {'Declarada En':<13} {'Referencias':<12}")
-        print("-" * 120)
+        # Si no se encuentra, agregar error
+        if linea_referencia:
+            self.errores.append(
+                f"Error semantico: Variable '{nombre}' no declarada (linea {linea_referencia})"
+            )
+        return None
         
-        # Ordenar símbolos por ámbito y luego por lexema para mejor organización
-        simbolos_ordenados = sorted(self.tabla.values(), key=lambda s: (s.ambito, s.lexema))
+    def buscar_en_ambito_actual(self, nombre):
+        """Busca un símbolo solo en el ámbito actual"""
+        clave = self.obtener_clave_completa(nombre)
+        return self.tabla.get(clave, None)
         
-        # Datos con formato mejorado
-        for simbolo in simbolos_ordenados:
-            # Formatear valores
-            valor_str = str(simbolo.valor) if simbolo.valor is not None else "-"
-            if len(valor_str) > 14:
-                valor_str = valor_str[:11] + "..."
+    def verificar_tipos_compatibles(self, tipo1, tipo2):
+        """Verifica si dos tipos son compatibles para asignación"""
+        if tipo1 == tipo2:
+            return True
             
-            linea_str = str(simbolo.declarada_en) if simbolo.declarada_en else "-"
-            
-            dimension_str = str(simbolo.dimension) if simbolo.dimension else "-"
-            
-            # Formatear referencias
-            if simbolo.referencias:
-                referencias_str = f"L:{','.join(str(ref.get('linea', '?')) for ref in simbolo.referencias[:3])}"
-                if len(simbolo.referencias) > 3:
-                    referencias_str += f"+{len(simbolo.referencias)-3}"
+        # Promociones automáticas permitidas
+        promociones = {
+            ('int', 'float'): True,    # int puede promocionarse a float
+            ('boolean', 'int'): True,  # boolean puede promocionarse a int
+        }
+        
+        return promociones.get((tipo2, tipo1), False)
+        
+    def inferir_tipo_operacion(self, tipo1, tipo2, operador, linea=None):
+        """
+        Infiere el tipo resultado de una operación binaria.
+        Retorna el tipo resultado o None si la operación es inválida.
+        """
+        tipos_numericos = {'int', 'float'}
+        
+        # Operaciones aritméticas
+        if operador in {'+', '-', '*', '/', '^', 'MAS', 'MENOS', 'MULT', 'DIV', 'POTENCIA'}:
+            if tipo1 in tipos_numericos and tipo2 in tipos_numericos:
+                # Promoción de tipos: si uno es float, el resultado es float
+                if 'float' in (tipo1, tipo2):
+                    return 'float'
+                return 'int'
             else:
-                referencias_str = "-"
-            
-            print(f"{simbolo.lexema:<15} {simbolo.categoria_lexica:<17} {simbolo.tipo:<10} {dimension_str:<12} "
-                  f"{valor_str:<15} {simbolo.ambito:<15} {linea_str:<13} {referencias_str:<12}")
+                if linea:
+                    self.errores.append(
+                        f"Error de tipos en linea {linea}: Operacion aritmetica '{operador}' "
+                        f"no valida entre {tipo1} y {tipo2}"
+                    )
+                return None
+                
+        # Operaciones de comparación
+        elif operador in {'==', '!=', '<', '>', '<=', '>=', 'IGUAL_IGUAL', 'DIFERENTE', 
+                         'MAYOR', 'MENOR', 'MAYOR_IGUAL', 'MENOR_IGUAL'}:
+            if tipo1 in tipos_numericos and tipo2 in tipos_numericos:
+                return 'boolean'
+            elif tipo1 == tipo2:  # Mismos tipos se pueden comparar
+                return 'boolean'
+            else:
+                if linea:
+                    self.errores.append(
+                        f"Error de tipos en linea {linea}: Comparacion '{operador}' "
+                        f"no valida entre {tipo1} y {tipo2}"
+                    )
+                return None
+                
+        # Operaciones lógicas
+        elif operador in {'&&', '||', 'Y_LOGICO', 'O_LOGICO'}:
+            if tipo1 == 'boolean' and tipo2 == 'boolean':
+                return 'boolean'
+            else:
+                if linea:
+                    self.errores.append(
+                        f"Error de tipos en linea {linea}: Operacion logica '{operador}' "
+                        f"requiere operandos booleanos, encontrados {tipo1} y {tipo2}"
+                    )
+                return None
+                
+        return None
         
-        # Agregar resumen por ámbitos
-        self._imprimir_resumen_ambitos()
-    
-    def imprimir_tabla_mejorada(self):
-        """Imprime la tabla de símbolos con formato mejorado"""
-        print("\n" + "="*100)
-        print("TABLA DE SÍMBOLOS DETALLADA")
-        print("="*100)
+    def verificar_asignacion(self, nombre_var, tipo_expresion, linea):
+        """Verifica que una asignación sea válida"""
+        simbolo = self.buscar(nombre_var, linea)
+        if not simbolo:
+            return False
+            
+        if simbolo.categoria != 'variable' and simbolo.categoria != 'parametro':
+            self.errores.append(
+                f"Error semantico en linea {linea}: '{nombre_var}' no es una variable"
+            )
+            return False
+            
+        if not self.verificar_tipos_compatibles(simbolo.tipo, tipo_expresion):
+            self.errores.append(
+                f"Error de tipos en linea {linea}: No se puede asignar {tipo_expresion} "
+                f"a variable '{nombre_var}' de tipo {simbolo.tipo}"
+            )
+            return False
+            
+        return True
+        
+    def verificar_llamada_funcion(self, nombre_funcion, tipos_argumentos, linea):
+        """Verifica que una llamada a función sea válida"""
+        funcion = self.buscar(nombre_funcion, linea)
+        if not funcion:
+            return None
+            
+        if funcion.categoria != 'funcion':
+            self.errores.append(
+                f"Error semantico en linea {linea}: '{nombre_funcion}' no es una funcion"
+            )
+            return None
+            
+        # Verificar número de argumentos
+        if len(tipos_argumentos) != len(funcion.parametros):
+            self.errores.append(
+                f"Error semantico en linea {linea}: Funcion '{nombre_funcion}' "
+                f"espera {len(funcion.parametros)} argumentos, se proporcionaron {len(tipos_argumentos)}"
+            )
+            return None
+            
+        # Verificar tipos de argumentos
+        for i, (tipo_arg, (_, tipo_param)) in enumerate(zip(tipos_argumentos, funcion.parametros)):
+            if tipo_param == 'any':  # Parámetros que aceptan cualquier tipo
+                continue
+            if not self.verificar_tipos_compatibles(tipo_param, tipo_arg):
+                self.errores.append(
+                    f"Error de tipos en linea {linea}: Argumento {i+1} de '{nombre_funcion}' "
+                    f"esperado {tipo_param}, encontrado {tipo_arg}"
+                )
+                return None
+                
+        return funcion.tipo_retorno
+        
+    def imprimir_tabla(self):
+        """Imprime la tabla de símbolos de forma organizada"""
+        print("\n" + "="*130)
+        print("TABLA DE SIMBOLOS")
+        print("="*130)
         
         if not self.tabla:
-            print("⚠️  La tabla de símbolos está vacía")
+            print("La tabla de simbolos esta vacia")
             return
         
-        # Agrupar por ámbitos
+        # Encabezados
+        print(f"{'Nombre':<20} {'Categoria':<12} {'Tipo':<12} {'Ambito':<15} {'Linea':<8} {'Usado':<8} {'Detalles':<25}")
+        print("-" * 130)
+        
+        # Organizar por ámbitos
         simbolos_por_ambito = {}
         for simbolo in self.tabla.values():
             if simbolo.ambito not in simbolos_por_ambito:
                 simbolos_por_ambito[simbolo.ambito] = []
             simbolos_por_ambito[simbolo.ambito].append(simbolo)
         
-        # Imprimir por ámbitos
-        for ambito, simbolos in simbolos_por_ambito.items():
-            print(f"\n🔍 ÁMBITO: {ambito.upper()}")
-            print("-" * 50)
+        # Mostrar por ámbitos
+        for ambito in sorted(simbolos_por_ambito.keys()):
+            if ambito != 'global':
+                print(f"\n--- Ambito: {ambito} ---")
             
-            if not simbolos:
-                print("   (vacío)")
-                continue
+            for simbolo in sorted(simbolos_por_ambito[ambito], key=lambda s: s.nombre):
+                usado = "Si" if simbolo.usada else "No"
+                linea = str(simbolo.declarada_en) if simbolo.declarada_en else "-"
+                
+                # Detalles adicionales
+                detalles = ""
+                if simbolo.categoria == 'funcion':
+                    params = f"({len(simbolo.parametros)} params)" if simbolo.parametros else "(0 params)"
+                    detalles = f"{params} -> {simbolo.tipo_retorno}"
+                elif simbolo.valor is not None:
+                    detalles = f"= {simbolo.valor}"
+                elif simbolo.referencias:
+                    detalles = f"refs: {len(simbolo.referencias)}"
+                
+                print(f"{simbolo.nombre:<20} {simbolo.categoria:<12} {simbolo.tipo:<12} "
+                      f"{simbolo.ambito:<15} {linea:<8} {usado:<8} {detalles:<25}")
+    
+    def generar_reporte_errores(self):
+        """Genera un reporte completo de errores y advertencias"""
+        if not self.errores and not self.advertencias:
+            print("\nNo se encontraron errores semanticos.")
+            return True
             
-            for simbolo in simbolos:
-                print(f"   📝 {simbolo.lexema}")
-                print(f"      Categoría: {simbolo.categoria_lexica}")
-                print(f"      Tipo: {simbolo.tipo}")
-                if simbolo.valor is not None:
-                    print(f"      Valor: {simbolo.valor}")
-                if simbolo.declarada_en:
-                    print(f"      Declarada en línea: {simbolo.declarada_en}")
-                if simbolo.referencias:
-                    print(f"      Referencias: {len(simbolo.referencias)} usos")
-                print()
+        print(f"\n--- REPORTE DE ERRORES SEMANTICOS ---")
+        print(f"Total de errores: {len(self.errores)}")
+        print(f"Total de advertencias: {len(self.advertencias)}")
+        
+        if self.errores:
+            print("\nERRORES:")
+            for i, error in enumerate(self.errores, 1):
+                print(f"  {i}. {error}")
+                
+        if self.advertencias:
+            print("\nADVERTENCIAS:")
+            for i, advertencia in enumerate(self.advertencias, 1):
+                print(f"  {i}. {advertencia}")
+                
+        return len(self.errores) == 0
     
     def validar_tabla(self):
         """Valida la consistencia de la tabla de símbolos"""
-        errores_validacion = []
+        # Verificar variables no usadas
+        for simbolo in self.tabla.values():
+            if simbolo.categoria == 'variable' and not simbolo.usada and simbolo.ambito != 'global':
+                self.advertencias.append(
+                    f"Advertencia: Variable '{simbolo.nombre}' declarada pero no usada en ambito '{simbolo.ambito}'"
+                )
         
-        # Verificar que todas las funciones llamadas estén declaradas
-        # Verificar que todas las variables usadas estén declaradas
-        # etc.
-        
-        if errores_validacion:
-            self.errores.extend(errores_validacion)
-            return False
-        
-        return True
+        return len(self.errores) == 0
     
     def obtener_estadisticas(self):
-        """Devuelve estadísticas de la tabla"""
+        """Devuelve estadísticas detalladas de la tabla"""
+        variables = sum(1 for s in self.tabla.values() if s.categoria == 'variable')
+        funciones = sum(1 for s in self.tabla.values() if s.categoria == 'funcion')
+        parametros = sum(1 for s in self.tabla.values() if s.categoria == 'parametro')
+        constantes = sum(1 for s in self.tabla.values() if s.categoria == 'constante')
+        
+        variables_usadas = sum(1 for s in self.tabla.values() 
+                              if s.categoria == 'variable' and s.usada)
+        
         return {
             'total_simbolos': len(self.tabla),
-            'variables': self.estadisticas['variables'],
-            'funciones': self.estadisticas['funciones'],
-            'parametros': self.estadisticas['parametros'],
-            'ambitos': len(set(s.ambito for s in self.tabla.values())),
+            'variables': variables,
+            'variables_usadas': variables_usadas,
+            'funciones': funciones,
+            'parametros': parametros,
+            'constantes': constantes,
             'errores': len(self.errores),
             'advertencias': len(self.advertencias),
-            'estadisticas_operaciones': f"Símbolos procesados: {len(self.tabla)}"
+            'ambitos_totales': len(set(s.ambito for s in self.tabla.values()))
         }
-    
-    def buscar_por_categoria(self, categoria):
-        """Busca símbolos por categoría"""
-        return [s for s in self.tabla.values() if s.categoria_lexica == categoria]
-    
-    def buscar_por_tipo(self, tipo):
-        """Busca símbolos por tipo"""
-        return [s for s in self.tabla.values() if s.tipo == tipo]
-    
-    def obtener_funciones(self):
-        """Obtiene todas las funciones declaradas"""
-        return self.buscar_por_categoria('funcion')
-    
-    def obtener_variables(self):
-        """Obtiene todas las variables declaradas"""
-        return self.buscar_por_categoria('variable')
-    
-    def _imprimir_resumen_ambitos(self):
-        """Imprime un resumen de símbolos por ámbito"""
-        print("\n" + "="*60)
-        print("RESUMEN POR ÁMBITOS:")
-        print("="*60)
-        
-        # Agrupar símbolos por ámbito
-        simbolos_por_ambito = {}
-        for simbolo in self.tabla.values():
-            if simbolo.ambito not in simbolos_por_ambito:
-                simbolos_por_ambito[simbolo.ambito] = {
-                    'variables': 0,
-                    'funciones': 0,
-                    'parametros': 0,
-                    'total': 0
-                }
-            
-            simbolos_por_ambito[simbolo.ambito]['total'] += 1
-            if simbolo.categoria_lexica == 'variable':
-                simbolos_por_ambito[simbolo.ambito]['variables'] += 1
-            elif simbolo.categoria_lexica == 'funcion':
-                simbolos_por_ambito[simbolo.ambito]['funciones'] += 1
-            elif simbolo.categoria_lexica == 'parametro':
-                simbolos_por_ambito[simbolo.ambito]['parametros'] += 1
-        
-        # Mostrar resumen
-        for ambito, stats in simbolos_por_ambito.items():
-            print(f"📍 {ambito.upper()}: {stats['total']} símbolos "
-                  f"(Variables: {stats['variables']}, Funciones: {stats['funciones']}, Parámetros: {stats['parametros']})")
-    
-    def obtener_simbolos_ambito(self, ambito):
-        """Obtiene todos los símbolos de un ámbito específico"""
-        return [s for s in self.tabla.values() if s.ambito == ambito]
-    
-    def listar_ambitos(self):
-        """Lista todos los ámbitos disponibles"""
-        return list(set(s.ambito for s in self.tabla.values()))
