@@ -1,7 +1,7 @@
 PROGRAMA -> lista_sentencias
 
 lista_sentencias -> sentencia lista_sentencias
-lista_sentencias -> ''
+lista_sentencias -> ε
 
 sentencia -> VAR IDENTIFICADOR IGUAL expresion PUNTOYCOMA
 sentencia -> IDENTIFICADOR asignacion_o_llamada PUNTOYCOMA
@@ -16,13 +16,13 @@ asignacion_o_llamada -> IGUAL expresion
 asignacion_o_llamada -> PAR_IZQ lista_argumentos PAR_DER
 
 lista_argumentos -> expresion lista_argumentos_cont
-lista_argumentos -> ''
+lista_argumentos -> ε
 lista_argumentos_cont -> COMA expresion lista_argumentos_cont
-lista_argumentos_cont -> ''
+lista_argumentos_cont -> ε
 
 si_sentencia -> SI PAR_IZQ expresion PAR_DER bloque sino_parte
 sino_parte -> SINO bloque
-sino_parte -> ''
+sino_parte -> ε
 
 mientras_sentencia -> MIENTRAS PAR_IZQ expresion PAR_DER bloque
 
@@ -33,29 +33,29 @@ para_inicio -> IDENTIFICADOR IGUAL expresion
 funcion_def -> DEFINIR IDENTIFICADOR PAR_IZQ parametros PAR_DER bloque
 
 parametros -> IDENTIFICADOR parametros_cont
-parametros -> ''
+parametros -> ε
 parametros_cont -> COMA IDENTIFICADOR parametros_cont
-parametros_cont -> ''
+parametros_cont -> ε
 
 bloque -> LLAVE_IZQ lista_sentencias LLAVE_DER
 
 expresion -> exp_logico_and exp_logico_or_resto
 exp_logico_or_resto -> O_LOGICO exp_logico_and exp_logico_or_resto
-exp_logico_or_resto -> ''
+exp_logico_or_resto -> ε
 
 exp_logico_and -> exp_igualdad exp_logico_and_resto
 exp_logico_and_resto -> Y_LOGICO exp_igualdad exp_logico_and_resto
-exp_logico_and_resto -> ''
+exp_logico_and_resto -> ε
 
 exp_igualdad -> exp_comparacion exp_igualdad_resto
 exp_igualdad_resto -> op_igualdad exp_comparacion exp_igualdad_resto
-exp_igualdad_resto -> ''
+exp_igualdad_resto -> ε
 op_igualdad -> IGUAL_IGUAL
 op_igualdad -> DIFERENTE
 
 exp_comparacion -> exp_suma exp_comparacion_resto
 exp_comparacion_resto -> op_comp exp_suma exp_comparacion_resto
-exp_comparacion_resto -> ''
+exp_comparacion_resto -> ε
 op_comp -> MAYOR
 op_comp -> MENOR
 op_comp -> MAYOR_IGUAL
@@ -63,19 +63,19 @@ op_comp -> MENOR_IGUAL
 
 exp_suma -> exp_mult exp_suma_resto
 exp_suma_resto -> op_suma exp_mult exp_suma_resto
-exp_suma_resto -> ''
+exp_suma_resto -> ε
 op_suma -> MAS
 op_suma -> MENOS
 
 exp_mult -> exp_potencia exp_mult_resto
 exp_mult_resto -> op_mult exp_potencia exp_mult_resto
-exp_mult_resto -> ''
+exp_mult_resto -> ε
 op_mult -> MULT
 op_mult -> DIV
 
 exp_potencia -> exp_unario exp_potencia_resto
 exp_potencia_resto -> POTENCIA exp_unario exp_potencia_resto
-exp_potencia_resto -> ''
+exp_potencia_resto -> ε
 
 exp_unario -> NEGACION exp_unario
 exp_unario -> MENOS exp_unario
@@ -89,4 +89,4 @@ primario -> IDENTIFICADOR primario_llamada_opcional
 primario -> PAR_IZQ expresion PAR_DER
 
 primario_llamada_opcional -> PAR_IZQ lista_argumentos PAR_DER
-primario_llamada_opcional -> ''
+primario_llamada_opcional -> ε
