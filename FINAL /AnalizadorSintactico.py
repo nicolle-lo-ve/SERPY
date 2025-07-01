@@ -264,7 +264,7 @@ def exportar_arbol_a_graphviz(raiz, nombre_archivo="arbol_parseo.dot"):
     print("Para visualizar: dot -Tpng " + full_path + " -o arbol.png")
 
 if __name__ == '__main__':
-    tabla_csv_path = os.path.join(BASE_DIR, "COMPILADORES G", "tabla_ll1.csv")
+    tabla_csv_path = os.path.join(BASE_DIR, "COMPILADORES G", "table_ll1.csv")
     archivo_entrada_path = os.path.join(BASE_DIR, "Inputs", "programa.serpy")
     archivo_salida_graphviz = "arbol_parseo.dot"
 
