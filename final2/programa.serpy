@@ -1,0 +1,9 @@
+var x = 10;
+imprimir(x);
+
+definir suma(a, b) {
+    retornar a + b;
+}
+
+var resultado = suma(5, 3);
+imprimir(resultado);
